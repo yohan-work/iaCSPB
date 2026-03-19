@@ -22,7 +22,7 @@ export default async function DashboardPage() {
 
   const { data: projects } = await supabase
     .from("projects")
-    .select("*, template:templates(id, slug, name, description, preview_image)")
+    .select("*, template:templates(id, slug, name, description, preview_image), project_blocks(block_slug), provisioning_status, supabase_project_ref")
     .eq("user_id", user.id)
     .eq("status", "active")
     .order("created_at", { ascending: false });

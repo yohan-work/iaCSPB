@@ -25,7 +25,7 @@ export default async function AppLayout({
 
   const { data: project } = await supabase
     .from("projects")
-    .select("*, template:templates(id, slug, name)")
+    .select("*, template:templates(id, slug, name), provisioning_status")
     .eq("id", projectId)
     .eq("user_id", user.id)
     .single();
@@ -35,9 +35,20 @@ export default async function AppLayout({
   const templateSlug = project.template?.slug as TemplateSlug | undefined;
   const config = templateSlug ? TEMPLATE_REGISTRY[templateSlug] : null;
   const Icon = config?.icon;
+  const isProvisioning =
+    project.provisioning_status === "pending" ||
+    project.provisioning_status === "in_progress";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {isProvisioning && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 text-center text-sm text-amber-800 dark:text-amber-200">
+          전용 프로젝트 생성 중입니다. 완료되면 자동으로 전용 DB를 사용합니다.{" "}
+          <a href={`/app/${projectId}`} className="underline font-medium">
+            새로고침
+          </a>
+        </div>
+      )}
       {/* 앱 헤더 */}
       <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
