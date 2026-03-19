@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useOptimistic, useTransition } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useOptimistic, useTransition, useMemo } from "react";
+import { createClient, createClientWithCredentials } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
@@ -11,10 +11,23 @@ import type { TodoItem } from "@/types";
 interface TodoAppProps {
   projectId: string;
   initialTodos: TodoItem[];
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
 }
 
-export function TodoApp({ projectId, initialTodos }: TodoAppProps) {
-  const supabase = createClient();
+export function TodoApp({
+  projectId,
+  initialTodos,
+  supabaseUrl,
+  supabaseAnonKey,
+}: TodoAppProps) {
+  const supabase = useMemo(
+    () =>
+      supabaseUrl && supabaseAnonKey
+        ? createClientWithCredentials(supabaseUrl, supabaseAnonKey)
+        : createClient(),
+    [supabaseUrl, supabaseAnonKey]
+  );
   const [todos, setTodos] = useState<TodoItem[]>(initialTodos);
   const [newTitle, setNewTitle] = useState("");
   const [adding, setAdding] = useState(false);

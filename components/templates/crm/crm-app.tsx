@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useMemo } from "react";
+import { createClient, createClientWithCredentials } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,8 @@ import type { Contact, ContactStatus } from "@/types";
 interface CrmAppProps {
   projectId: string;
   initialContacts: Contact[];
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
 }
 
 type View = "list" | "form";
@@ -40,8 +42,19 @@ const STATUS_CONFIG: Record<
 
 const STATUS_OPTIONS: ContactStatus[] = ["lead", "active", "closed"];
 
-export function CrmApp({ projectId, initialContacts }: CrmAppProps) {
-  const supabase = createClient();
+export function CrmApp({
+  projectId,
+  initialContacts,
+  supabaseUrl,
+  supabaseAnonKey,
+}: CrmAppProps) {
+  const supabase = useMemo(
+    () =>
+      supabaseUrl && supabaseAnonKey
+        ? createClientWithCredentials(supabaseUrl, supabaseAnonKey)
+        : createClient(),
+    [supabaseUrl, supabaseAnonKey]
+  );
   const [contacts, setContacts] = useState<Contact[]>(initialContacts);
   const [view, setView] = useState<View>("list");
   const [editingContact, setEditingContact] = useState<Contact | null>(null);

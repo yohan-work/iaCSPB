@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useMemo } from "react";
+import { createClient, createClientWithCredentials } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +15,25 @@ import type { BlogPost } from "@/types";
 interface BlogAppProps {
   projectId: string;
   initialPosts: BlogPost[];
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
 }
 
 type View = "list" | "editor";
 
-export function BlogApp({ projectId, initialPosts }: BlogAppProps) {
-  const supabase = createClient();
+export function BlogApp({
+  projectId,
+  initialPosts,
+  supabaseUrl,
+  supabaseAnonKey,
+}: BlogAppProps) {
+  const supabase = useMemo(
+    () =>
+      supabaseUrl && supabaseAnonKey
+        ? createClientWithCredentials(supabaseUrl, supabaseAnonKey)
+        : createClient(),
+    [supabaseUrl, supabaseAnonKey]
+  );
   const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
   const [view, setView] = useState<View>("list");
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);

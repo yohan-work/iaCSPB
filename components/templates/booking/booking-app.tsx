@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useMemo } from "react";
+import { createClient, createClientWithCredentials } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,8 @@ import type { Booking, BookingStatus } from "@/types";
 interface BookingAppProps {
   projectId: string;
   initialBookings: Booking[];
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
 }
 
 type View = "list" | "form";
@@ -49,8 +51,19 @@ const STATUS_CONFIG: Record<
 
 const STATUS_OPTIONS: BookingStatus[] = ["pending", "confirmed", "cancelled"];
 
-export function BookingApp({ projectId, initialBookings }: BookingAppProps) {
-  const supabase = createClient();
+export function BookingApp({
+  projectId,
+  initialBookings,
+  supabaseUrl,
+  supabaseAnonKey,
+}: BookingAppProps) {
+  const supabase = useMemo(
+    () =>
+      supabaseUrl && supabaseAnonKey
+        ? createClientWithCredentials(supabaseUrl, supabaseAnonKey)
+        : createClient(),
+    [supabaseUrl, supabaseAnonKey]
+  );
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [view, setView] = useState<View>("list");
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
